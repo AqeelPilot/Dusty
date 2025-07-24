@@ -11,11 +11,10 @@ copyright = "2025, Muhammad Aqeel Abdulla"
 author = "Muhammad Aqeel Abdulla"
 release = "1"
 
-
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../../Dusty"))
 
 
 # -- General configuration ---------------------------------------------------
