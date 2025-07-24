@@ -17,5 +17,6 @@ documentation for details.
 
    overview
    gettingstarted
+   introduction
    Dust_Storm_Modules
    DustyMain
