@@ -1,3 +1,17 @@
+"""
+Dust_Storm_Modules
+------------------
+This module includes processors for MERRA-2 dust and AODANA data,
+storm detection, fusion storm tracking, and monthly analysis.
+
+Classes:
+- MERRA2AODProcessor
+- MERRA2AODANAProcessor
+- MonthlyDustAnalyzer
+- StormDetector
+- FusionStormDetector
+"""
+
 import os
 import numpy as np
 import pandas as pd

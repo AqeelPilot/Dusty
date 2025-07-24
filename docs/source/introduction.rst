@@ -15,5 +15,4 @@ Example usage
 
    processor = MERRA2AODProcessor("20220101", "20220105", (10, 30, 30, 50))
    processor.download_files()
-I am going to do this 
-Radio Check
+I am going to do this Radio Check
