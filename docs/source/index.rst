@@ -18,5 +18,8 @@ documentation for details.
    overview
    gettingstarted
    introduction
+   installation
+   useage
+   modules/moduleindex
    Dust_Storm_Modules
    DustyMain
