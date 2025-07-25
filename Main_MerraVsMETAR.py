@@ -7,11 +7,25 @@ import json
 from METARvsMERRA import AirportDustFlagger, AirportAODFlagger
 
 # ========================= WELCOME MESSAGE ========================= #
-print("=" * 65)
-print(" " * 23 + "METAR DUST CHECK")
-print(" " * 10 + "Developed by Muhammad Aqeel Abdulla")
-print("=" * 65)
-print("\n")
+print("\033[95m" + "=" * 65)
+print("\033[94m" + " " * 23 + "METAR DUST CHECK")
+print("\033[96m" + " " * 10 + "Developed by Muhammad Aqeel Abdulla")
+print("\033[95m" + "=" * 65 + "\033[0m")
+print("\n\033[0m" + "METAR Dust Check is a verification module that cross-references")
+print("airport METAR reports with satellite-based dust mass concentration data.")
+print("It provides a dual-source validation of dust storm events by comparing:")
+print("\n - Reported visibility and dust conditions in METARs")
+print(" - Dust concentration anomalies from MERRA-2 datasets")
+print("\nThe system flags dust storm detections using two passes:")
+print(
+    " 1. MERRA-led: Detects dust spikes in satellite data and checks for METAR agreement."
+)
+print(" 2. METAR-led: Flags METAR dust codes and confirms with satellite data.")
+print("\nFinal outputs include:")
+print(" - A CSV log of agreement statistics by airport and hour")
+print(" - Source-coded detection outputs (1 = MERRA, 2 = METAR, 3 = Both)")
+print("\033[95m" + "=" * 65 + "\033[0m\n")
+
 # =================================================================== #
 
 if __name__ == "__main__":

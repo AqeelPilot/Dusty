@@ -19,14 +19,16 @@ from Dust_Storm_Modules import (
 
 # ========================= WELCOME MESSAGE ========================= #
 print("\033[95m" + "=" * 65)
-print("\033[94m" + " " * 23 + "DUSTY")
-print("\033[96m" + " " * 10 + "Developed by Muhammad Aqeel Abdulla")
-print(
-    "DUSTY is designed to track dust storms over a range of days within the given timeframe and area of interest \nproduces 2 csv files in the csv_output_path defined in the .json file \n the first file produces a summary of the dust storm every month and the other file allows for the dust storm to be tracked"
-)
+print("\033[94m" + " " * 26 + "DUSTY")
+print("\033[96m" + " " * 14 + "Developed by Muhammad Aqeel Abdulla")
+print("\n\033[0m" + "DUSTY is designed to track dust storms over a range of days")
+print("within the given timeframe and area of interest.")
+print("It produces two CSV files in the path defined by `csv_output_path`")
+print("in the configuration `.json` file:\n")
+print(" - Monthly summary of detected dust storms")
+print(" - Storm-tracking file for identifying storm evolution over time")
+print("\033[95m" + "=" * 65 + "\033[0m\n")
 
-print("\033[95m" + "=" * 65 + "\033[0m")
-print("\n")
 # ================================================================ #
 
 
