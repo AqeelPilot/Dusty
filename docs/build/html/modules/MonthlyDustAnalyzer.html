@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MonthlyDustAnalyzer Module &mdash; Dusty 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="StormDetector Module" href="StormDetector.html" />
+    <link rel="prev" title="MERRA2AODANAProcessor" href="MERRA2AODANAProcessor.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Dusty
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Welcome to DUSTY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../useage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="moduleindex.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="MERRA2AODProcessor.html">MERRA2AODProcessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MERRA2AODANAProcessor.html">MERRA2AODANAProcessor</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MonthlyDustAnalyzer Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functionality">Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#input-requirements">Input Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-options">Configuration Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integration-in-dusty-pipeline">Integration in Dusty Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#output-format">Output Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-cases">Use Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="StormDetector.html">StormDetector Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FusionStormDetector.html">FusionStormDetector Module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Dusty</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="moduleindex.html">Modules</a></li>
+      <li class="breadcrumb-item active">MonthlyDustAnalyzer Module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/MonthlyDustAnalyzer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="monthlydustanalyzer-module">
+<h1>MonthlyDustAnalyzer Module<a class="headerlink" href="#monthlydustanalyzer-module" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">MonthlyDustAnalyzer</span></code> module is a key component of the <strong>Dusty Pipeline</strong> that performs monthly aggregation and statistical analysis of dust storm events. It consumes raw storm detections from modules like <code class="docutils literal notranslate"><span class="pre">StormDetector</span></code> or <code class="docutils literal notranslate"><span class="pre">FusionStormDetector</span></code> and transforms them into a structured, high-level summary suitable for climatological research, operational reporting, and validation.</p>
+<p>The primary objective of this module is to <strong>condense multi-day dust storm detections into monthly summaries</strong>, capturing key metrics such as frequency, intensity, spatial distribution, and proximity to critical infrastructure like airports.</p>
+</section>
+<section id="functionality">
+<h2>Functionality<a class="headerlink" href="#functionality" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Storm Grouping by Month</strong>:
+- Processes per-storm detections across multiple days.
+- Groups entries by month and storm identifier.
+- Supports merging or splitting storms that persist across months based on user-defined logic.</p></li>
+<li><p><strong>Statistical Aggregation</strong>:
+- Calculates storm-wise statistics for each month:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Number of storms detected</p></li>
+<li><p>Maximum and average dust mass</p></li>
+<li><p>Geographical spread (min/max lat/lon)</p></li>
+<li><p>Most affected airports (if proximity data is available)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><strong>Airport Association</strong>:
+- If airport proximity data is included in input CSV, it identifies which airports were affected each month.
+- Computes airport-specific statistics like number of events and intensity of nearby storms.</p></li>
+<li><p><strong>Output Generation</strong>:
+- Produces a clean monthly CSV file summarizing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Each storm’s lifecycle</p></li>
+<li><p>Storm metrics (mass, location, days active)</p></li>
+<li><p>Airport interactions</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>Output is saved to the configured <cite>csv_output_path</cite> as <cite>monthly_storm_summary.csv</cite>.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="input-requirements">
+<h2>Input Requirements<a class="headerlink" href="#input-requirements" title="Link to this heading"></a></h2>
+<p>The module expects storm-level CSVs as generated by:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">StormDetector</span></code> (dust-only)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FusionStormDetector</span></code> (dust + AODANA)</p></li>
+</ul>
+<p>Each input file must include:</p>
+<ul class="simple">
+<li><p><cite>storm_id</cite></p></li>
+<li><p><cite>date</cite></p></li>
+<li><p><cite>center_lat</cite>, <cite>center_lon</cite></p></li>
+<li><p><cite>avg_dust_mass</cite></p></li>
+<li><p><cite>nearest_airport_icao</cite> (optional)</p></li>
+</ul>
+</section>
+<section id="configuration-options">
+<h2>Configuration Options<a class="headerlink" href="#configuration-options" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">merge_cross_month_storms</span></code>: Boolean to track storms across months or split per month.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_storm_duration</span></code>: Filter out short-lived storms (e.g., &lt; 1 day).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_avg_mass_threshold</span></code>: Ignore low-intensity storms from aggregation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">airport_focus_list</span></code>: Optional list of ICAOs to prioritize in reporting.</p></li>
+</ul>
+</section>
+<section id="integration-in-dusty-pipeline">
+<h2>Integration in Dusty Pipeline<a class="headerlink" href="#integration-in-dusty-pipeline" title="Link to this heading"></a></h2>
+<p>This module is typically called at the end of each processing cycle after all storm detections have been logged. It serves as the <strong>final summary layer</strong> before optional METAR matching or visualization tools.</p>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><cite>Pandas</cite></p></li>
+<li><p><cite>Datetime</cite></p></li>
+<li><p><cite>Geopy</cite> (optional, for distance/airport metrics)</p></li>
+<li><p><cite>OS</cite> and <cite>Glob</cite> (for multi-file reading)</p></li>
+</ul>
+</section>
+<section id="output-format">
+<h2>Output Format<a class="headerlink" href="#output-format" title="Link to this heading"></a></h2>
+<p>Example fields in <cite>monthly_storm_summary.csv</cite>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">month</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">storm_id</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_days_active</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_dust_mass</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avg_dust_mass</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">geographical_extent</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">affected_airports</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">peak_intensity_day</span></code></p></li>
+</ul>
+</section>
+<section id="use-cases">
+<h2>Use Cases<a class="headerlink" href="#use-cases" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Monthly monitoring of regional dust activity</p></li>
+<li><p>Infrastructure vulnerability reporting (e.g., airports)</p></li>
+<li><p>Scientific validation of seasonal trends</p></li>
+<li><p>Baseline statistics for thresholding or alerting models</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">MonthlyDustAnalyzer</span></code> module ensures traceability, transparency, and long-term usability of the raw dust storm detection outputs, forming a bridge between data science and operational insights.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="MERRA2AODANAProcessor.html" class="btn btn-neutral float-left" title="MERRA2AODANAProcessor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="StormDetector.html" class="btn btn-neutral float-right" title="StormDetector Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Muhammad Aqeel Abdulla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

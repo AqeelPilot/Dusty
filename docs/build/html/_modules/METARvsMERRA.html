@@ -1,0 +1,459 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>METARvsMERRA &mdash; Dusty 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Dusty
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Welcome to DUSTY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../useage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/moduleindex.html">Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Dusty</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">METARvsMERRA</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for METARvsMERRA</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">Dust_Storm_Modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">MERRA2AODProcessor</span>
+
+
+<div class="viewcode-block" id="AirportDustFlagger">
+<a class="viewcode-back" href="../METARvsMERRA.html#METARvsMERRA.AirportDustFlagger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AirportDustFlagger</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metar_csv_path</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">airport_csv_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metar_csv_path</span> <span class="o">=</span> <span class="n">metar_csv_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span> <span class="o">=</span> <span class="n">config_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">airport_csv_path</span> <span class="o">=</span> <span class="n">airport_csv_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_config</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_name</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;project_name&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region_bounds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;region_bounds&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;modis_output_dir&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;csv_output_path&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_vectorized_haversine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat1_array</span><span class="p">,</span> <span class="n">lon1_array</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">):</span>
+        <span class="n">lat1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat1_array</span><span class="p">)</span>
+        <span class="n">lon1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon1_array</span><span class="p">)</span>
+        <span class="n">lat2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span>
+        <span class="n">lon2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon2</span><span class="p">)</span>
+        <span class="n">dlat</span> <span class="o">=</span> <span class="n">lat2</span> <span class="o">-</span> <span class="n">lat1</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">lon2</span> <span class="o">-</span> <span class="n">lon1</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dlat</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dlon</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="mi">6371</span>
+        <span class="k">return</span> <span class="n">r</span> <span class="o">*</span> <span class="n">c</span>
+
+<div class="viewcode-block" id="AirportDustFlagger.run">
+<a class="viewcode-back" href="../METARvsMERRA.html#METARvsMERRA.AirportDustFlagger.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[1] Checking and processing MERRA-2 data...&quot;</span><span class="p">)</span>
+        <span class="n">processor</span> <span class="o">=</span> <span class="n">MERRA2AODProcessor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_bounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+        <span class="p">)</span>
+        <span class="n">processor</span><span class="o">.</span><span class="n">download_files</span><span class="p">()</span>
+        <span class="n">processor</span><span class="o">.</span><span class="n">convert_to_csv</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[2] Loading METAR and airport data...&quot;</span><span class="p">)</span>
+        <span class="n">metar_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metar_csv_path</span><span class="p">)</span>
+        <span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
+        <span class="n">metar_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">airport_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">airport_csv_path</span><span class="p">)</span>
+        <span class="n">airport_df</span> <span class="o">=</span> <span class="n">airport_df</span><span class="p">[</span><span class="n">airport_df</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;large_airport&quot;</span><span class="p">]</span>
+        <span class="n">unique_stations</span> <span class="o">=</span> <span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;station&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">airport_df</span> <span class="o">=</span> <span class="n">airport_df</span><span class="p">[</span><span class="n">airport_df</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">unique_stations</span><span class="p">)]</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">debug_logs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[3] Matching MERRA-2 spikes with METAR reports...&quot;</span><span class="p">)</span>
+        <span class="n">merra_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">f</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MERRA2_400&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">all_merra_df</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">merra_files</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y %H:%M&quot;</span><span class="p">)</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span>
+            <span class="n">all_merra_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_merra_df</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No MERRA CSVs found. Aborting.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">merra_full</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">all_merra_df</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">metar_times</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
+        <span class="n">merra_by_hour</span> <span class="o">=</span> <span class="p">{</span><span class="n">hour</span><span class="p">:</span> <span class="n">df</span> <span class="k">for</span> <span class="n">hour</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">merra_full</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;hour&quot;</span><span class="p">)}</span>
+
+        <span class="k">for</span> <span class="n">hour</span><span class="p">,</span> <span class="n">hour_df</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">merra_by_hour</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;[MERRA-led analysis]&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">airport</span> <span class="ow">in</span> <span class="n">airport_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">airport_lat</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;latitude_deg&quot;</span><span class="p">]</span>
+                <span class="n">airport_lon</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;longitude_deg&quot;</span><span class="p">]</span>
+                <span class="n">icao_code</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">]</span>
+                <span class="n">airport_name</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+
+                <span class="n">hour_df</span> <span class="o">=</span> <span class="n">hour_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vectorized_haversine</span><span class="p">(</span>
+                    <span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">airport_lat</span><span class="p">,</span>
+                    <span class="n">airport_lon</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="n">candidate_df</span> <span class="o">=</span> <span class="n">hour_df</span><span class="p">[</span><span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">50</span><span class="p">]</span>
+                <span class="n">threshold_df</span> <span class="o">=</span> <span class="n">hour_df</span><span class="p">[</span><span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">threshold_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">monthly_mean</span> <span class="o">=</span> <span class="n">threshold_df</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">std_dev</span> <span class="o">=</span> <span class="n">threshold_df</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">threshold_val</span> <span class="o">=</span> <span class="n">monthly_mean</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">std_dev</span>
+
+                <span class="n">filtered_df</span> <span class="o">=</span> <span class="n">candidate_df</span><span class="p">[</span><span class="n">candidate_df</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold_val</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">filtered_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span>
+                    <span class="n">metar_agrees</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+                        <span class="nb">abs</span><span class="p">((</span><span class="n">timestamp</span> <span class="o">-</span> <span class="n">mt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">1800</span>
+                        <span class="k">for</span> <span class="n">mt</span> <span class="ow">in</span> <span class="n">metar_times</span>
+                    <span class="p">)</span>
+                    <span class="n">source</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">metar_agrees</span> <span class="k">else</span> <span class="mi">2</span>
+
+                    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;datetime&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
+                        <span class="s2">&quot;airport_name&quot;</span><span class="p">:</span> <span class="n">airport_name</span><span class="p">,</span>
+                        <span class="s2">&quot;icao_code&quot;</span><span class="p">:</span> <span class="n">icao_code</span><span class="p">,</span>
+                        <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;distance_km&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;dust_mass&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;monthly_mean&quot;</span><span class="p">:</span> <span class="n">monthly_mean</span><span class="p">,</span>
+                        <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="n">threshold_val</span><span class="p">,</span>
+                        <span class="s2">&quot;above_monthly_avg&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s2">&quot;Source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+                    <span class="p">}</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">metar_row</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">metar_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">(),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">metar_df</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;[METAR-led analysis]&quot;</span>
+        <span class="p">):</span>
+            <span class="n">metar_time</span> <span class="o">=</span> <span class="n">metar_row</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span>
+            <span class="n">station</span> <span class="o">=</span> <span class="n">metar_row</span><span class="p">[</span><span class="s2">&quot;station&quot;</span><span class="p">]</span>
+            <span class="n">airport_info</span> <span class="o">=</span> <span class="n">airport_df</span><span class="p">[</span><span class="n">airport_df</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">station</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">airport_info</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">airport</span> <span class="o">=</span> <span class="n">airport_info</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">airport_lat</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;latitude_deg&quot;</span><span class="p">]</span>
+            <span class="n">airport_lon</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;longitude_deg&quot;</span><span class="p">]</span>
+            <span class="n">airport_name</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+
+            <span class="n">time_window_start</span> <span class="o">=</span> <span class="n">metar_time</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">time_window_end</span> <span class="o">=</span> <span class="n">metar_time</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+            <span class="n">merra_candidates</span> <span class="o">=</span> <span class="n">merra_full</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">merra_full</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">time_window_start</span><span class="p">)</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">merra_full</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">time_window_end</span><span class="p">)</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="n">merra_candidates</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vectorized_haversine</span><span class="p">(</span>
+                <span class="n">merra_candidates</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">merra_candidates</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">airport_lat</span><span class="p">,</span>
+                <span class="n">airport_lon</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">candidate_df</span> <span class="o">=</span> <span class="n">merra_candidates</span><span class="p">[</span><span class="n">merra_candidates</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">50</span><span class="p">]</span>
+            <span class="n">threshold_df</span> <span class="o">=</span> <span class="n">merra_candidates</span><span class="p">[</span><span class="n">merra_candidates</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">threshold_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">monthly_mean</span> <span class="o">=</span> <span class="n">threshold_df</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">std_dev</span> <span class="o">=</span> <span class="n">threshold_df</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">threshold_val</span> <span class="o">=</span> <span class="n">monthly_mean</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">std_dev</span>
+
+            <span class="n">match</span> <span class="o">=</span> <span class="n">candidate_df</span><span class="p">[</span><span class="n">candidate_df</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold_val</span><span class="p">]</span>
+            <span class="n">source_code</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="o">.</span><span class="n">empty</span> <span class="k">else</span> <span class="mi">1</span>
+
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">match_row</span> <span class="ow">in</span> <span class="n">match</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;datetime&quot;</span><span class="p">:</span> <span class="n">metar_time</span><span class="p">,</span>
+                    <span class="s2">&quot;airport_name&quot;</span><span class="p">:</span> <span class="n">airport_name</span><span class="p">,</span>
+                    <span class="s2">&quot;icao_code&quot;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span>
+                    <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">match_row</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">match_row</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;distance_km&quot;</span><span class="p">:</span> <span class="n">match_row</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;dust_mass&quot;</span><span class="p">:</span> <span class="n">match_row</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;monthly_mean&quot;</span><span class="p">:</span> <span class="n">monthly_mean</span><span class="p">,</span>
+                    <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="n">threshold_val</span><span class="p">,</span>
+                    <span class="s2">&quot;above_monthly_avg&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s2">&quot;Source&quot;</span><span class="p">:</span> <span class="n">source_code</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">results_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+        <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project_name</span><span class="si">}</span><span class="s2">_metar_dust_crosscheck.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="n">results_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">agreement_summary</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">agreement_summary</span><span class="p">[</span><span class="s2">&quot;agreement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">agreement_summary</span><span class="p">[</span><span class="s2">&quot;Source&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">agreement_summary</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;airport_name&quot;</span><span class="p">,</span> <span class="n">agreement_summary</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span><span class="p">]</span>
+        <span class="p">)[</span><span class="s2">&quot;agreement&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">])</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;percentage_agreement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Summary of METAR agreement by airport and hour:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">summary</span><span class="p">[[</span><span class="s2">&quot;percentage_agreement&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Hourly crosscheck complete. Results saved to: </span><span class="si">{</span><span class="n">output_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results_df</span></div>
+</div>
+
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">Dust_Storm_Modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">MERRA2AODANAProcessor</span>
+
+
+<div class="viewcode-block" id="AirportAODFlagger">
+<a class="viewcode-back" href="../METARvsMERRA.html#METARvsMERRA.AirportAODFlagger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AirportAODFlagger</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metar_csv_path</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">airport_csv_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metar_csv_path</span> <span class="o">=</span> <span class="n">metar_csv_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span> <span class="o">=</span> <span class="n">config_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">airport_csv_path</span> <span class="o">=</span> <span class="n">airport_csv_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_config</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_name</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;project_name&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region_bounds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;region_bounds&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;AOD_output_dir&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;csv_output_path&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_vectorized_haversine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat1_array</span><span class="p">,</span> <span class="n">lon1_array</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">):</span>
+        <span class="n">lat1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat1_array</span><span class="p">)</span>
+        <span class="n">lon1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon1_array</span><span class="p">)</span>
+        <span class="n">lat2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span>
+        <span class="n">lon2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon2</span><span class="p">)</span>
+        <span class="n">dlat</span> <span class="o">=</span> <span class="n">lat2</span> <span class="o">-</span> <span class="n">lat1</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">lon2</span> <span class="o">-</span> <span class="n">lon1</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dlat</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dlon</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="mi">6371</span>
+        <span class="k">return</span> <span class="n">r</span> <span class="o">*</span> <span class="n">c</span>
+
+<div class="viewcode-block" id="AirportAODFlagger.run">
+<a class="viewcode-back" href="../METARvsMERRA.html#METARvsMERRA.AirportAODFlagger.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[1] Checking and processing MERRA-2 AODANA data...&quot;</span><span class="p">)</span>
+        <span class="n">processor</span> <span class="o">=</span> <span class="n">MERRA2AODANAProcessor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_bounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+        <span class="p">)</span>
+        <span class="n">processor</span><span class="o">.</span><span class="n">download_files</span><span class="p">()</span>
+        <span class="n">processor</span><span class="o">.</span><span class="n">process_files</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[2] Loading METAR and airport data...&quot;</span><span class="p">)</span>
+        <span class="n">metar_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metar_csv_path</span><span class="p">)</span>
+        <span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
+        <span class="n">metar_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">airport_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">airport_csv_path</span><span class="p">)</span>
+        <span class="n">airport_df</span> <span class="o">=</span> <span class="n">airport_df</span><span class="p">[</span><span class="n">airport_df</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;large_airport&quot;</span><span class="p">]</span>
+        <span class="n">unique_stations</span> <span class="o">=</span> <span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;station&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">airport_df</span> <span class="o">=</span> <span class="n">airport_df</span><span class="p">[</span><span class="n">airport_df</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">unique_stations</span><span class="p">)]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[3] Matching MERRA-2 AODANA spikes with METAR reports...&quot;</span><span class="p">)</span>
+        <span class="n">aod_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">f</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MERRA2_400&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">all_aod_df</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">aod_files</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y %H:%M&quot;</span><span class="p">)</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span>
+            <span class="n">all_aod_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_aod_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> AODANA files.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_aod_df</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No AODANA CSVs found. Aborting.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">aod_full</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">all_aod_df</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">metar_times</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">metar_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
+        <span class="n">aod_by_hour</span> <span class="o">=</span> <span class="p">{</span><span class="n">hour</span><span class="p">:</span> <span class="n">df</span> <span class="k">for</span> <span class="n">hour</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">aod_full</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;hour&quot;</span><span class="p">)}</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">hour</span><span class="p">,</span> <span class="n">hour_df</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">aod_by_hour</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;[AODANA-led analysis]&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">airport</span> <span class="ow">in</span> <span class="n">airport_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">airport_lat</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;latitude_deg&quot;</span><span class="p">]</span>
+                <span class="n">airport_lon</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;longitude_deg&quot;</span><span class="p">]</span>
+                <span class="n">icao_code</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">]</span>
+                <span class="n">airport_name</span> <span class="o">=</span> <span class="n">airport</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+
+                <span class="n">hour_df</span> <span class="o">=</span> <span class="n">hour_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vectorized_haversine</span><span class="p">(</span>
+                    <span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">airport_lat</span><span class="p">,</span>
+                    <span class="n">airport_lon</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="n">candidate_df</span> <span class="o">=</span> <span class="n">hour_df</span><span class="p">[</span><span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">50</span><span class="p">]</span>
+                <span class="n">threshold_df</span> <span class="o">=</span> <span class="n">hour_df</span><span class="p">[</span><span class="n">hour_df</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">threshold_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">monthly_mean</span> <span class="o">=</span> <span class="n">threshold_df</span><span class="p">[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">std_dev</span> <span class="o">=</span> <span class="n">threshold_df</span><span class="p">[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">threshold_val</span> <span class="o">=</span> <span class="n">monthly_mean</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">std_dev</span>
+
+                <span class="n">filtered_df</span> <span class="o">=</span> <span class="n">candidate_df</span><span class="p">[</span><span class="n">candidate_df</span><span class="p">[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold_val</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">filtered_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span>
+                    <span class="n">metar_agrees</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+                        <span class="nb">abs</span><span class="p">((</span><span class="n">timestamp</span> <span class="o">-</span> <span class="n">mt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">1800</span>
+                        <span class="k">for</span> <span class="n">mt</span> <span class="ow">in</span> <span class="n">metar_times</span>
+                    <span class="p">)</span>
+
+                    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;datetime&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
+                        <span class="s2">&quot;airport_name&quot;</span><span class="p">:</span> <span class="n">airport_name</span><span class="p">,</span>
+                        <span class="s2">&quot;icao_code&quot;</span><span class="p">:</span> <span class="n">icao_code</span><span class="p">,</span>
+                        <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;distance_km&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;AODANA&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;monthly_mean_AOD&quot;</span><span class="p">:</span> <span class="n">monthly_mean</span><span class="p">,</span>
+                        <span class="s2">&quot;threshold_AOD&quot;</span><span class="p">:</span> <span class="n">threshold_val</span><span class="p">,</span>
+                        <span class="s2">&quot;above_monthly_avg_AOD&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s2">&quot;METAR_agrees&quot;</span><span class="p">:</span> <span class="n">metar_agrees</span><span class="p">,</span>
+                    <span class="p">}</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">airport_df</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+
+        <span class="n">results_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project_name</span><span class="si">}</span><span class="s2">_metar_AOD_crosscheck.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="n">results_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ AODANA crosscheck complete. Results saved to: </span><span class="si">{</span><span class="n">output_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results_df</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Muhammad Aqeel Abdulla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

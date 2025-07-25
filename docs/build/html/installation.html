@@ -1,0 +1,208 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; Dusty 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="useage.html" />
+    <link rel="prev" title="Welcome to DUSTY" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Dusty
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Welcome to DUSTY</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#required-python-packages">Required Python Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#clone-the-repository">Clone the Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-up-authentication-earthdata">Set Up Authentication (Earthdata)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-file">Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-dusty">Running DUSTY</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="useage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/moduleindex.html">Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Dusty</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>This page outlines the steps required to set up and run the DUSTY system for tracking and analyzing dust storms using MERRA-2 datasets.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Python 3.9 or higher</p></li>
+<li><p>Git (for cloning the repository)</p></li>
+<li><p>A Unix-like or Windows OS with internet access</p></li>
+<li><p>A NASA Earthdata account (required to download MERRA-2 files)</p></li>
+</ul>
+</section>
+<section id="required-python-packages">
+<h2>Required Python Packages<a class="headerlink" href="#required-python-packages" title="Link to this heading"></a></h2>
+<p>To install the necessary dependencies, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+<p>Your <cite>requirements.txt</cite> file should include (or manually install):</p>
+<ul class="simple">
+<li><p>numpy</p></li>
+<li><p>pandas</p></li>
+<li><p>xarray</p></li>
+<li><p>matplotlib</p></li>
+<li><p>tqdm</p></li>
+<li><p>requests</p></li>
+<li><p>netCDF4</p></li>
+<li><p>scipy</p></li>
+<li><p>geopy</p></li>
+<li><p>scikit-image</p></li>
+</ul>
+</section>
+<section id="clone-the-repository">
+<h2>Clone the Repository<a class="headerlink" href="#clone-the-repository" title="Link to this heading"></a></h2>
+<p>Use the following command to clone the project:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/AqeelPilot/DustFlight.git
+<span class="nb">cd</span><span class="w"> </span>DustFlight
+</pre></div>
+</div>
+</section>
+<section id="set-up-authentication-earthdata">
+<h2>Set Up Authentication (Earthdata)<a class="headerlink" href="#set-up-authentication-earthdata" title="Link to this heading"></a></h2>
+<p>MERRA-2 data requires NASA Earthdata login credentials. You need to:</p>
+<ol class="arabic simple">
+<li><p>Create an Earthdata account: <a class="reference external" href="https://urs.earthdata.nasa.gov">https://urs.earthdata.nasa.gov</a></p></li>
+<li><p>Create a <cite>.netrc</cite> file in your home directory with the following format:</p></li>
+</ol>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>machine urs.earthdata.nasa.gov
+login your_username
+password your_password
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>On Windows, ensure the path to <cite>.netrc</cite> is set using:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;NETRC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">yourname</span><span class="se">\\</span><span class="s2">login_netrc&quot;</span>
+</pre></div>
+</div>
+<p>Or, edit this path in <cite>MERRA2AODProcessor</cite> and <cite>MERRA2AODANAProcessor</cite> constructors.</p>
+</section>
+<section id="configuration-file">
+<h2>Configuration File<a class="headerlink" href="#configuration-file" title="Link to this heading"></a></h2>
+<p>DUSTY requires a configuration <cite>.json</cite> file. This file specifies:</p>
+<ul class="simple">
+<li><p><cite>region_bounds</cite>: <cite>[lat_min, lat_max, lon_min, lon_max]</cite></p></li>
+<li><p><cite>start_date</cite>, <cite>end_date</cite>: <cite>“YYYY-MM-DD”</cite></p></li>
+<li><p><cite>modis_output_dir</cite>, <cite>AOD_output_dir</cite>, <cite>csv_output_path</cite>: output folder paths</p></li>
+<li><p><cite>project_name</cite>: project identifier used in output file names</p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;region_bounds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="mi">35</span><span class="p">,</span><span class="w"> </span><span class="mi">40</span><span class="p">,</span><span class="w"> </span><span class="mi">65</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;start_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2023-06-01&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;end_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2023-06-30&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;modis_output_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data/merra2&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;AOD_output_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data/aodana&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;csv_output_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;output&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;project_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DustyGulf&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="running-dusty">
+<h2>Running DUSTY<a class="headerlink" href="#running-dusty" title="Link to this heading"></a></h2>
+<p>Once installed and configured, run the main script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>DustyMain.py
+</pre></div>
+</div>
+<p>You will be prompted to select the configuration file and choose whether to use the Fusion Storm Detector.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Welcome to DUSTY" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="useage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Muhammad Aqeel Abdulla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

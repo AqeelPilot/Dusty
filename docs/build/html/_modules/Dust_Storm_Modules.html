@@ -1,0 +1,761 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dust_Storm_Modules &mdash; Dusty 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Dusty
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Welcome to DUSTY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../useage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/moduleindex.html">Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Dusty</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">Dust_Storm_Modules</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for Dust_Storm_Modules</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Dust_Storm_Modules</span>
+<span class="sd">------------------</span>
+<span class="sd">This module includes processors for MERRA-2 dust and AODANA data,</span>
+<span class="sd">storm detection, fusion storm tracking, and monthly analysis.</span>
+
+<span class="sd">Classes:</span>
+<span class="sd">- MERRA2AODProcessor</span>
+<span class="sd">- MERRA2AODANAProcessor</span>
+<span class="sd">- MonthlyDustAnalyzer</span>
+<span class="sd">- StormDetector</span>
+<span class="sd">- FusionStormDetector</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span> <span class="k">as</span> <span class="n">auto_tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geopy.distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">geodesic</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">label</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">label</span><span class="p">,</span> <span class="n">center_of_mass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">skimage.measure</span><span class="w"> </span><span class="kn">import</span> <span class="n">regionprops</span>
+
+
+<div class="viewcode-block" id="MERRA2AODProcessor">
+<a class="viewcode-back" href="../modules/MERRA2AODProcessor.html#Dust_Storm_Modules.MERRA2AODProcessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MERRA2AODProcessor</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">region_bounds</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;data/merra2&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">start_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="o">=</span> <span class="n">end_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span> <span class="o">=</span> <span class="n">region_bounds</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span> <span class="o">+=</span> <span class="mi">360</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span> <span class="o">+=</span> <span class="mi">360</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;NETRC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">aqeel</span><span class="se">\\</span><span class="s2">login_netrc&quot;</span>
+
+<div class="viewcode-block" id="MERRA2AODProcessor.download_files">
+<a class="viewcode-back" href="../modules/MERRA2AODProcessor.html#Dust_Storm_Modules.MERRA2AODProcessor.download_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Downloading MERRA-2 NetCDF files...&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Downloading&quot;</span>
+        <span class="p">):</span>
+            <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">day</span>
+            <span class="n">base_url</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T1NXAER.5.12.4&quot;</span>
+            <span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;MERRA2_400.tavg1_2d_aer_Nx.</span><span class="si">{</span><span class="n">year</span><span class="si">}{</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}{</span><span class="n">day</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">.nc4&quot;</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; File already exists: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">trust_env</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+                    <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+                    <span class="n">total_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-length&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
+                                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Download failed for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MERRA2AODProcessor.convert_to_csv">
+<a class="viewcode-back" href="../modules/MERRA2AODProcessor.html#Dust_Storm_Modules.MERRA2AODProcessor.convert_to_csv">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Converting NetCDF files to CSV...&quot;</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc4&quot;</span><span class="p">)])</span>
+
+        <span class="c1">#  Skip if the CSV already exists</span>
+
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Converting&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">output_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_csv</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSV already exists for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">, skipping.&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">)</span>
+
+                <span class="n">aod</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;DUSMASS&quot;</span><span class="p">][:,</span> <span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># shape: (time, lat, lon)</span>
+                <span class="n">aod_region</span> <span class="o">=</span> <span class="n">aod</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span>
+                    <span class="n">lat</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_max</span><span class="p">),</span>
+                    <span class="n">lon</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span><span class="p">),</span>
+                <span class="p">)</span>
+
+                <span class="n">lat_vals</span> <span class="o">=</span> <span class="n">aod_region</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">lon_vals</span> <span class="o">=</span> <span class="n">aod_region</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">time_vals</span> <span class="o">=</span> <span class="n">aod_region</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">aod_region</span><span class="o">.</span><span class="n">values</span>  <span class="c1"># shape: (time, lat, lon)</span>
+
+                <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_vals</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lat_vals</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">lon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">):</span>
+                            <span class="n">val</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+                                <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="p">[</span>
+                                        <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                                            <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y %H:%M&quot;</span>
+                                        <span class="p">),</span>
+                                        <span class="n">lat</span><span class="p">,</span>
+                                        <span class="n">lon</span><span class="p">,</span>
+                                        <span class="n">val</span><span class="p">,</span>
+                                    <span class="p">]</span>
+                                <span class="p">)</span>
+
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                    <span class="n">rows</span><span class="p">,</span>
+                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;dust_mass&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+                <span class="n">out_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+                <span class="p">)</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">out_csv</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Error processing </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MERRA2AODANAProcessor">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.MERRA2AODANAProcessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MERRA2AODANAProcessor</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">region_bounds</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">start_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="o">=</span> <span class="n">end_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span> <span class="o">=</span> <span class="n">region_bounds</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span> <span class="o">+=</span> <span class="mi">360</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span> <span class="o">+=</span> <span class="mi">360</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;NETRC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">aqeel</span><span class="se">\\</span><span class="s2">login_netrc&quot;</span>
+
+<div class="viewcode-block" id="MERRA2AODANAProcessor.download_files">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.MERRA2AODANAProcessor.download_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Downloading MERRA-2 AODANA data (M2I3NXGAS)...&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Downloading AODANA&quot;</span>
+        <span class="p">):</span>
+            <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">day</span>
+            <span class="n">base_url</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2I3NXGAS.5.12.4&quot;</span>
+            <span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;MERRA2_400.inst3_2d_gas_Nx.</span><span class="si">{</span><span class="n">year</span><span class="si">}{</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}{</span><span class="n">day</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">.nc4&quot;</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">trust_env</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
+                                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Failed to download </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MERRA2AODANAProcessor.process_files">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.MERRA2AODANAProcessor.process_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Processing AODANA data into CSV...&quot;</span><span class="p">)</span>
+        <span class="n">all_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc4&quot;</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing AOD Files&quot;</span><span class="p">):</span>
+            <span class="n">output_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_csv</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSV already exists for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">, skipping conversion.&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+                <span class="n">aod</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">][:,</span> <span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># time, lat, lon</span>
+                <span class="n">aod_region</span> <span class="o">=</span> <span class="n">aod</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span>
+                    <span class="n">lat</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_max</span><span class="p">),</span>
+                    <span class="n">lon</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_max</span><span class="p">),</span>
+                <span class="p">)</span>
+
+                <span class="n">time_vals</span> <span class="o">=</span> <span class="n">aod_region</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">lat_vals</span> <span class="o">=</span> <span class="n">aod_region</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">lon_vals</span> <span class="o">=</span> <span class="n">aod_region</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">aod_region</span><span class="o">.</span><span class="n">values</span>  <span class="c1"># shape: (time, lat, lon)</span>
+
+                <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_vals</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lat_vals</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">lon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">):</span>
+                            <span class="n">val</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+                                <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="p">[</span>
+                                        <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                                            <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y %H:%M&quot;</span>
+                                        <span class="p">),</span>
+                                        <span class="n">lat</span><span class="p">,</span>
+                                        <span class="n">lon</span><span class="p">,</span>
+                                        <span class="n">val</span><span class="p">,</span>
+                                    <span class="p">]</span>
+                                <span class="p">)</span>
+
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                    <span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;AODANA&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">csv_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.csv&quot;</span>
+
+                <span class="n">output_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_AODANA.csv&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_csv</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSV already exists for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">, skipping conversion.&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">csv_name</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Error processing </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MERRA2AODANAProcessor.run">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.MERRA2AODANAProcessor.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_files</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_files</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MonthlyDustAnalyzer">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.MonthlyDustAnalyzer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MonthlyDustAnalyzer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_name</span> <span class="o">=</span> <span class="n">project_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_data</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="MonthlyDustAnalyzer.analyze">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.MonthlyDustAnalyzer.analyze">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">summary_csv_path</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Analyzing dust data with time resolution...&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">))):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MERRA2_400&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;dust_mass&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+                    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y %H:%M&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">all_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_data</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No valid CSVs found.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Combine all time-resolved entries</span>
+        <span class="n">full_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_data</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Extract hour + minute to preserve time-level patterns</span>
+        <span class="n">full_df</span><span class="p">[</span><span class="s2">&quot;hour_minute&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Group by lat, lon, and time of day to calculate monthly mean and std</span>
+        <span class="n">stats_df</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">full_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;hour_minute&quot;</span><span class="p">])[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">monthly_mean</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">std_dev</span><span class="o">=</span><span class="s2">&quot;std&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Merge back to get comparison at the same (lat, lon, hour:minute)</span>
+        <span class="n">full_df</span><span class="p">[</span><span class="s2">&quot;hour_minute&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M&quot;</span><span class="p">)</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">full_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">stats_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;hour_minute&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Apply 2× std threshold</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;monthly_mean&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;std_dev&quot;</span><span class="p">]</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;above_monthly_avg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Save results</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project_name</span><span class="si">}</span><span class="s2">_monthly_dust_summary.csv&quot;</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">summary_csv_path</span><span class="p">),</span> <span class="n">output_filename</span><span class="p">)</span>
+        <span class="n">merged</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Time-resolved monthly summary saved to: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="StormDetector">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.StormDetector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StormDetector</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">,</span> <span class="n">project_name</span><span class="p">,</span> <span class="n">airport_csv_path</span><span class="p">,</span> <span class="n">csv_output_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span> <span class="o">=</span> <span class="n">input_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_name</span> <span class="o">=</span> <span class="n">project_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">airport_csv_path</span> <span class="o">=</span> <span class="n">airport_csv_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span> <span class="o">=</span> <span class="n">csv_output_path</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">airport_csv_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;large_airport&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="StormDetector.detect_storms">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.StormDetector.detect_storms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_storms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detecting storm blobs and tracking across days...&quot;</span><span class="p">)</span>
+        <span class="n">storm_id_counter</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">previous_day_blobs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span><span class="p">))):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MERRA2_400&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">{</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;dust_mass&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y %H:%M&quot;</span><span class="p">)</span>
+            <span class="n">grouped</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">])[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="p">)</span>
+
+            <span class="n">lat_vals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+            <span class="n">lon_vals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+
+            <span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">lat_vals</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">grouped</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">lat_vals</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">])</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">lon_vals</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">])</span>
+                <span class="n">data_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;dust_mass&quot;</span><span class="p">]</span>
+
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">threshold_factor</span> <span class="o">*</span> <span class="n">std</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">data_array</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">labeled</span><span class="p">,</span> <span class="n">num_features</span> <span class="o">=</span> <span class="n">label</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+
+            <span class="n">day_results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">blob_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_features</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">labeled</span> <span class="o">==</span> <span class="n">blob_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="n">lat_vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+                <span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="n">lon_vals</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+
+                <span class="n">avg_mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+                <span class="n">max_mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+                <span class="n">center_i</span><span class="p">,</span> <span class="n">center_j</span> <span class="o">=</span> <span class="n">center_of_mass</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">labeled</span><span class="p">,</span> <span class="n">blob_id</span><span class="p">)</span>
+                <span class="n">center_lat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">center_i</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lat_vals</span><span class="p">)),</span> <span class="n">lat_vals</span><span class="p">))</span>
+                <span class="n">center_lon</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">center_j</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">)),</span> <span class="n">lon_vals</span><span class="p">))</span>
+
+                <span class="n">airport_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_nearest_large_airport</span><span class="p">(</span><span class="n">center_lat</span><span class="p">,</span> <span class="n">center_lon</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">airport_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">icao</span><span class="p">,</span> <span class="n">distance_km</span> <span class="o">=</span> <span class="n">airport_info</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mf">0.01</span> <span class="o">&lt;=</span> <span class="n">distance_km</span> <span class="o">&lt;=</span> <span class="mi">80</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">best_match</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">best_score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">prev_blob</span> <span class="ow">in</span> <span class="n">previous_day_blobs</span><span class="p">:</span>
+                    <span class="n">prev_lat</span> <span class="o">=</span> <span class="n">prev_blob</span><span class="p">[</span><span class="s2">&quot;center_lat&quot;</span><span class="p">]</span>
+                    <span class="n">prev_lon</span> <span class="o">=</span> <span class="n">prev_blob</span><span class="p">[</span><span class="s2">&quot;center_lon&quot;</span><span class="p">]</span>
+                    <span class="n">prev_size</span> <span class="o">=</span> <span class="n">prev_blob</span><span class="p">[</span><span class="s2">&quot;blob_size&quot;</span><span class="p">]</span>
+
+                    <span class="n">dist_km</span> <span class="o">=</span> <span class="n">geodesic</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">prev_lat</span><span class="p">,</span> <span class="n">prev_lon</span><span class="p">),</span> <span class="p">(</span><span class="n">center_lat</span><span class="p">,</span> <span class="n">center_lon</span><span class="p">)</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">km</span>
+                    <span class="n">size_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">-</span> <span class="n">prev_size</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">dist_km</span> <span class="o">&lt;</span> <span class="mi">50</span> <span class="ow">and</span> <span class="n">size_diff</span> <span class="o">&lt;</span> <span class="mf">0.6</span> <span class="o">*</span> <span class="n">prev_size</span><span class="p">:</span>
+                        <span class="n">score</span> <span class="o">=</span> <span class="n">dist_km</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">size_diff</span>
+                        <span class="k">if</span> <span class="n">score</span> <span class="o">&lt;</span> <span class="n">best_score</span><span class="p">:</span>
+                            <span class="n">best_score</span> <span class="o">=</span> <span class="n">score</span>
+                            <span class="n">best_match</span> <span class="o">=</span> <span class="n">prev_blob</span>
+
+                <span class="k">if</span> <span class="n">best_match</span><span class="p">:</span>
+                    <span class="n">matched_id</span> <span class="o">=</span> <span class="n">best_match</span><span class="p">[</span><span class="s2">&quot;storm_id&quot;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">matched_id</span> <span class="o">=</span> <span class="n">storm_id_counter</span>
+                    <span class="n">storm_id_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="n">blob_info</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">file</span><span class="p">,</span>
+                    <span class="s2">&quot;storm_id&quot;</span><span class="p">:</span> <span class="n">matched_id</span><span class="p">,</span>
+                    <span class="s2">&quot;blob_size&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span>
+                    <span class="s2">&quot;avg_dust_mass&quot;</span><span class="p">:</span> <span class="n">avg_mass</span><span class="p">,</span>
+                    <span class="s2">&quot;max_dust_mass&quot;</span><span class="p">:</span> <span class="n">max_mass</span><span class="p">,</span>
+                    <span class="s2">&quot;center_lat&quot;</span><span class="p">:</span> <span class="n">center_lat</span><span class="p">,</span>
+                    <span class="s2">&quot;center_lon&quot;</span><span class="p">:</span> <span class="n">center_lon</span><span class="p">,</span>
+                    <span class="s2">&quot;nearest_airport_icao&quot;</span><span class="p">:</span> <span class="n">icao</span><span class="p">,</span>
+                    <span class="s2">&quot;distance_to_airport_km&quot;</span><span class="p">:</span> <span class="n">distance_km</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="n">day_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">blob_info</span><span class="p">)</span>
+
+            <span class="n">previous_day_blobs</span> <span class="o">=</span> <span class="n">day_results</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">day_results</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_nearest_large_airport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">):</span>
+        <span class="n">min_dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="n">nearest_airport</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">airport_coords</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;latitude_deg&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;longitude_deg&quot;</span><span class="p">])</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">geodesic</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">),</span> <span class="n">airport_coords</span><span class="p">)</span><span class="o">.</span><span class="n">km</span>
+            <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">min_dist</span><span class="p">:</span>
+                <span class="n">min_dist</span> <span class="o">=</span> <span class="n">dist</span>
+                <span class="n">nearest_airport</span> <span class="o">=</span> <span class="n">row</span>
+
+        <span class="k">if</span> <span class="n">nearest_airport</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">nearest_airport</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">],</span> <span class="n">min_dist</span>
+
+<div class="viewcode-block" id="StormDetector.save_results">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.StormDetector.save_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No storms tracked.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project_name</span><span class="si">}</span><span class="s2">_DUSMASS_storm_lifecycle.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Storm tracking results saved to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FusionStormDetector">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.FusionStormDetector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FusionStormDetector</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aodana_dir</span><span class="p">,</span> <span class="n">airport_csv_path</span><span class="p">,</span> <span class="n">csv_output_path</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aodana_dir</span> <span class="o">=</span> <span class="n">aodana_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span> <span class="o">=</span> <span class="n">csv_output_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_name</span> <span class="o">=</span> <span class="n">project_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storm_id_counter</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_day_blobs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">airport_csv_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;large_airport&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="FusionStormDetector.detect_storms">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.FusionStormDetector.detect_storms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_storms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">aod_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aodana_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)]</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">aod_files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;AODANA Storm Tracking&quot;</span><span class="p">):</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aodana_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+            <span class="n">aod_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="n">aod_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">aod_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y %H:%M&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">daily_records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aod_df</span><span class="p">)</span>
+
+            <span class="n">filename_core</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">filename_core</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+            <span class="n">date_str</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">filename_core</span>
+
+            <span class="n">grouped</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">aod_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">])[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">lat_vals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">grouped</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+            <span class="n">lon_vals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">grouped</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+
+            <span class="n">aod_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">lat_vals</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">grouped</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">lat_vals</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">])</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">lon_vals</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">])</span>
+                <span class="n">aod_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">aod_arr</span><span class="p">)):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: Empty AOD array. Skipping.&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">aod_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">aod_arr</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">aod_arr</span><span class="p">)</span>
+            <span class="n">aod_mask</span> <span class="o">=</span> <span class="n">aod_arr</span> <span class="o">&gt;</span> <span class="n">aod_thresh</span>
+            <span class="n">labeled</span><span class="p">,</span> <span class="n">num_features</span> <span class="o">=</span> <span class="n">label</span><span class="p">(</span><span class="n">aod_mask</span><span class="p">)</span>
+            <span class="n">regions</span> <span class="o">=</span> <span class="n">regionprops</span><span class="p">(</span><span class="n">labeled</span><span class="p">)</span>
+
+            <span class="n">day_results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">coords</span>
+                <span class="n">avg_aod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">aod_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">])</span>
+                <span class="n">max_aod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">aod_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">])</span>
+
+                <span class="n">center_i</span><span class="p">,</span> <span class="n">center_j</span> <span class="o">=</span> <span class="n">center_of_mass</span><span class="p">(</span><span class="n">aod_mask</span><span class="p">,</span> <span class="n">labeled</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+                <span class="n">center_lat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">center_i</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lat_vals</span><span class="p">)),</span> <span class="n">lat_vals</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">center_lon</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">center_j</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lon_vals</span><span class="p">)),</span> <span class="n">lon_vals</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="n">airport_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_nearest_large_airport</span><span class="p">(</span><span class="n">center_lat</span><span class="p">,</span> <span class="n">center_lon</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">airport_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">icao</span><span class="p">,</span> <span class="n">distance_km</span> <span class="o">=</span> <span class="n">airport_info</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mf">0.01</span> <span class="o">&lt;=</span> <span class="n">distance_km</span> <span class="o">&lt;=</span> <span class="mi">80</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">best_match</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">best_score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">prev_blob</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_day_blobs</span><span class="p">:</span>
+                    <span class="n">prev_lat</span> <span class="o">=</span> <span class="n">prev_blob</span><span class="p">[</span><span class="s2">&quot;center_lat&quot;</span><span class="p">]</span>
+                    <span class="n">prev_lon</span> <span class="o">=</span> <span class="n">prev_blob</span><span class="p">[</span><span class="s2">&quot;center_lon&quot;</span><span class="p">]</span>
+                    <span class="n">prev_size</span> <span class="o">=</span> <span class="n">prev_blob</span><span class="p">[</span><span class="s2">&quot;blob_size&quot;</span><span class="p">]</span>
+
+                    <span class="n">dist_km</span> <span class="o">=</span> <span class="n">geodesic</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">prev_lat</span><span class="p">,</span> <span class="n">prev_lon</span><span class="p">),</span> <span class="p">(</span><span class="n">center_lat</span><span class="p">,</span> <span class="n">center_lon</span><span class="p">)</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">km</span>
+                    <span class="n">size_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">area</span> <span class="o">-</span> <span class="n">prev_size</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">dist_km</span> <span class="o">&lt;</span> <span class="mi">50</span> <span class="ow">and</span> <span class="n">size_diff</span> <span class="o">&lt;</span> <span class="mf">0.6</span> <span class="o">*</span> <span class="n">prev_size</span><span class="p">:</span>
+                        <span class="n">score</span> <span class="o">=</span> <span class="n">dist_km</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">size_diff</span>  <span class="c1"># weighted score</span>
+                        <span class="k">if</span> <span class="n">score</span> <span class="o">&lt;</span> <span class="n">best_score</span><span class="p">:</span>
+                            <span class="n">best_score</span> <span class="o">=</span> <span class="n">score</span>
+                            <span class="n">best_match</span> <span class="o">=</span> <span class="n">prev_blob</span>
+
+                <span class="k">if</span> <span class="n">best_match</span><span class="p">:</span>
+                    <span class="n">matched_id</span> <span class="o">=</span> <span class="n">best_match</span><span class="p">[</span><span class="s2">&quot;storm_id&quot;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">matched_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storm_id_counter</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">storm_id_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="n">blob_info</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="n">date_str</span><span class="p">,</span>
+                    <span class="s2">&quot;storm_id&quot;</span><span class="p">:</span> <span class="n">matched_id</span><span class="p">,</span>
+                    <span class="s2">&quot;blob_size&quot;</span><span class="p">:</span> <span class="n">region</span><span class="o">.</span><span class="n">area</span><span class="p">,</span>
+                    <span class="s2">&quot;avg_AODANA&quot;</span><span class="p">:</span> <span class="n">avg_aod</span><span class="p">,</span>
+                    <span class="s2">&quot;max_AODANA&quot;</span><span class="p">:</span> <span class="n">max_aod</span><span class="p">,</span>
+                    <span class="s2">&quot;center_lat&quot;</span><span class="p">:</span> <span class="n">center_lat</span><span class="p">,</span>
+                    <span class="s2">&quot;center_lon&quot;</span><span class="p">:</span> <span class="n">center_lon</span><span class="p">,</span>
+                    <span class="s2">&quot;nearest_airport_icao&quot;</span><span class="p">:</span> <span class="n">icao</span><span class="p">,</span>
+                    <span class="s2">&quot;distance_to_airport_km&quot;</span><span class="p">:</span> <span class="n">distance_km</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="n">day_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">blob_info</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">previous_day_blobs</span> <span class="o">=</span> <span class="n">day_results</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">day_results</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_monthly_summary</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_nearest_large_airport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">):</span>
+        <span class="n">min_dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="n">nearest_airport</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">airports_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">airport_coords</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;latitude_deg&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;longitude_deg&quot;</span><span class="p">])</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">geodesic</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">),</span> <span class="n">airport_coords</span><span class="p">)</span><span class="o">.</span><span class="n">km</span>
+            <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">min_dist</span><span class="p">:</span>
+                <span class="n">min_dist</span> <span class="o">=</span> <span class="n">dist</span>
+                <span class="n">nearest_airport</span> <span class="o">=</span> <span class="n">row</span>
+        <span class="k">if</span> <span class="n">nearest_airport</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">nearest_airport</span><span class="p">[</span><span class="s2">&quot;icao_code&quot;</span><span class="p">],</span> <span class="n">min_dist</span>
+
+<div class="viewcode-block" id="FusionStormDetector.save_results">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.FusionStormDetector.save_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No storms detected.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project_name</span><span class="si">}</span><span class="s2">_AOD_storm_lifecycle.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AOD-based storm tracking results saved to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FusionStormDetector.generate_monthly_summary">
+<a class="viewcode-back" href="../Dust_Storm_Modules.html#Dust_Storm_Modules.FusionStormDetector.generate_monthly_summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_monthly_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generating monthly AODANA summary...&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_records</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No fusion records to analyze.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">full_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">daily_records</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">full_df</span><span class="p">[</span><span class="s2">&quot;hour_minute&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M&quot;</span><span class="p">)</span>
+        <span class="n">stats_df</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">full_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;hour_minute&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+                <span class="n">regional_mean_aod</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;AODANA&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+                <span class="n">regional_std_aod</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;AODANA&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">full_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">stats_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;hour_minute&quot;</span><span class="p">)</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;threshold_aod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;regional_mean_aod&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;regional_std_aod&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;above_monthly_avg_aod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;AODANA&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;threshold_aod&quot;</span><span class="p">]</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project_name</span><span class="si">}</span><span class="s2">_monthly_AODANA_summary.csv&quot;</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_output_path</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">)</span>
+        <span class="n">merged</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Monthly AODANA summary saved to: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Muhammad Aqeel Abdulla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

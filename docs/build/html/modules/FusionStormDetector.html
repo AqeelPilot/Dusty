@@ -1,0 +1,206 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FusionStormDetector Module &mdash; Dusty 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="StormDetector Module" href="StormDetector.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Dusty
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Welcome to DUSTY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../useage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="moduleindex.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="MERRA2AODProcessor.html">MERRA2AODProcessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MERRA2AODANAProcessor.html">MERRA2AODANAProcessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MonthlyDustAnalyzer.html">MonthlyDustAnalyzer Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StormDetector.html">StormDetector Module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FusionStormDetector Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functionality">Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integration-in-dusty-pipeline">Integration in Dusty Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parameters-customization">Parameters &amp; Customization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#csv-output-format">CSV Output Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advantages-of-fusion-detection">Advantages of Fusion Detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-cases">Use Cases</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Dusty</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="moduleindex.html">Modules</a></li>
+      <li class="breadcrumb-item active">FusionStormDetector Module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/FusionStormDetector.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fusionstormdetector-module">
+<h1>FusionStormDetector Module<a class="headerlink" href="#fusionstormdetector-module" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">FusionStormDetector</span></code> module is a high-confidence storm detection system developed as part of the <strong>Dusty Pipeline</strong>. It extends the core functionality of the <code class="docutils literal notranslate"><span class="pre">StormDetector</span></code> by integrating data from both <strong>DUSMASS</strong> (Dust Mass Concentration) and <strong>AODANA</strong> (Aerosol Optical Depth Analysis) variables, enabling <strong>multi-source fusion detection</strong> of dust storms.</p>
+<p>By independently identifying dust storm blobs in both datasets and analyzing their spatial overlap, the module ensures only robust and physically consistent storms are flagged, thereby reducing false positives and improving validation accuracy.</p>
+</section>
+<section id="functionality">
+<h2>Functionality<a class="headerlink" href="#functionality" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Independent Blob Detection</strong>:
+- Processes DUSMASS and AODANA files <strong>separately</strong> using dynamic thresholding and blob detection.
+- Detects candidate blobs from each source and stores them as individual feature sets.</p></li>
+<li><p><strong>Blob Fusion Logic</strong>:
+- Compares DUSMASS and AODANA blobs from the <strong>same date</strong>.
+- Determines spatial overlap using bounding box or pixel-level intersection methods.
+- Only blobs with <strong>sufficient overlap</strong> (defined by a configurable <cite>%match threshold</cite>) are retained as valid dust storms.</p></li>
+<li><p><strong>Airport Proximity Filtering</strong> <em>(Optional)</em>:
+- As in <code class="docutils literal notranslate"><span class="pre">StormDetector</span></code>, filters blobs that are within 10–15 km of large airports using ICAO lookup.
+- Appends nearest airport ICAO and distance for situational awareness and downstream integration.</p></li>
+<li><p><strong>Storm Lifecycle Tracking</strong> <em>(Advanced)</em>:
+- If enabled, it tracks fused blobs across multiple dates using spatial continuity and mass similarity.
+- Outputs grouped events representing the evolution of a single storm across time.</p></li>
+</ol>
+</section>
+<section id="integration-in-dusty-pipeline">
+<h2>Integration in Dusty Pipeline<a class="headerlink" href="#integration-in-dusty-pipeline" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">FusionStormDetector</span></code> replaces <code class="docutils literal notranslate"><span class="pre">StormDetector</span></code> when <strong>fusion mode</strong> is selected in the pipeline configuration (e.g., via the <cite>mode_selector</cite> flag in <cite>DustyMain.py</cite>). Its results are passed downstream for monthly aggregation, METAR cross-verification, or operational alerting.</p>
+</section>
+<section id="parameters-customization">
+<h2>Parameters &amp; Customization<a class="headerlink" href="#parameters-customization" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">overlap_threshold</span></code>: Minimum % overlap required to fuse DUSMASS and AODANA blobs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_blob_area</span></code>: Minimum number of pixels for blob detection.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_airport_filtering</span></code>: Boolean toggle to restrict detection near airports.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enable_tracking</span></code>: Boolean to enable multi-day storm lifecycle tracking.</p></li>
+</ul>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><cite>NumPy</cite></p></li>
+<li><p><cite>Pandas</cite></p></li>
+<li><p><cite>Shapely</cite> or <cite>OpenCV</cite> (for blob intersection logic)</p></li>
+<li><p><cite>Geopy</cite> (for airport filtering)</p></li>
+<li><p><cite>Datetime</cite> and <cite>os</cite> for tracking and file management</p></li>
+</ul>
+</section>
+<section id="csv-output-format">
+<h2>CSV Output Format<a class="headerlink" href="#csv-output-format" title="Link to this heading"></a></h2>
+<p>Each output row contains:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">date</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">storm_id</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">center_lat</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">center_lon</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avg_dust_mass</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avg_aodana</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">overlap_ratio</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nearest_airport_icao</span></code> (if applicable)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distance_to_airport_km</span></code> (if applicable)</p></li>
+</ul>
+</section>
+<section id="advantages-of-fusion-detection">
+<h2>Advantages of Fusion Detection<a class="headerlink" href="#advantages-of-fusion-detection" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Greater Confidence</strong>: Confirms events using two independent physical variables.</p></li>
+<li><p><strong>Lower False Positives</strong>: Reduces detection of transient anomalies that only appear in one dataset.</p></li>
+<li><p><strong>Enhanced Scientific Utility</strong>: Supports climatology studies and airport-level hazard analytics.</p></li>
+</ul>
+</section>
+<section id="use-cases">
+<h2>Use Cases<a class="headerlink" href="#use-cases" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>High-confidence hazard detection near airports</p></li>
+<li><p>Scientific research on dust-aerosol coupling</p></li>
+<li><p>Validation of METAR-reported dust events with satellite fusion</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">FusionStormDetector</span></code> brings scientific rigor and spatial coherence to dust storm detection and is a cornerstone module in advanced deployments of the Dusty Pipeline.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="StormDetector.html" class="btn btn-neutral float-left" title="StormDetector Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Muhammad Aqeel Abdulla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
