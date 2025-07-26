@@ -6,6 +6,19 @@
 Dusty documentation
 ===================
 
+Welcome to DUSTY's Documentation
+================================
+
+DUSTY is a modular pipeline for detecting, validating, and tracking dust storms using satellite (MERRA-2) and METAR data. It provides storm lifecycle tracking, proximity analysis, and METAR cross-validation.
+
+**Core Features:**
+- 🛰️ Satellite-based Dust Detection (MERRA-2)
+- 🛬 Airport Proximity Filtering
+- 📈 Storm Lifecycle Tracking
+- 🧪 Monthly Threshold Analysis
+- 📋 METAR Agreement Verification
+
+Start with :ref:`installation <installation>` or dive into :ref:`usage <useage>`.
 
 
 .. toctree::
