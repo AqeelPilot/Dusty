@@ -37,7 +37,11 @@ import pandas as pd
 from tqdm import tqdm
 from scipy.ndimage import label, center_of_mass
 from skimage.measure import regionprops
-
+import os
+import subprocess
+import shutil
+import pandas as pd
+from tqdm import tqdm
 
 class MERRA2AODProcessor:
     def __init__(self, start_date, end_date, region_bounds, output_dir="data/merra2"):
@@ -52,37 +56,76 @@ class MERRA2AODProcessor:
 
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
-        os.environ["NETRC"] = r"C:\\Users\\aqeel\\login_netrc"
+        os.environ["NETRC"] = r"C:\\Users\\y46144ma\\login_netrc"
 
+
+ 
     def download_files(self):
         print(" Downloading MERRA-2 NetCDF files...")
-        for date in tqdm(
-            pd.date_range(self.start_date, self.end_date), desc="Downloading"
-        ):
-            year, month, day = date.year, date.month, date.day
-            base_url = (
-                "https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T1NXAER.5.12.4"
+    
+        home = os.path.expanduser("~")
+        # Prefer Windows-style _netrc; fall back to .netrc if that's what you created
+        netrc_candidates = [os.path.join(home, "_netrc"), os.path.join(home, ".netrc")]
+        netrc_path = next((p for p in netrc_candidates if os.path.exists(p)), None)
+        cookies_path = os.path.join(home, ".urs_cookies")
+        os.makedirs(self.output_dir, exist_ok=True)
+        env = os.environ.copy()
+        env["NETRC"] = r"C:\Users\y46144ma\login_netrc"
+        def have(cmd): 
+            return shutil.which(cmd) is not None
+    
+        use_curl = have("curl")
+        use_wget = have("wget")
+    
+        if not use_curl and not use_wget:
+            raise RuntimeError("Neither 'curl' nor 'wget' found on PATH.")
+    
+        if use_curl and netrc_path:
+            raise RuntimeError(
+                "No netrc file found. On Windows create C:\\Users\\<you>\\_netrc "
+                "or use .netrc and pass --netrc-file."
             )
+    
+        for date in tqdm(pd.date_range(self.start_date, self.end_date), desc="Downloading"):
+            year, month, day = date.year, date.month, date.day
+            base_url = "https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T1NXAER.5.12.4"
             filename = f"MERRA2_400.tavg1_2d_aer_Nx.{year}{month:02d}{day:02d}.nc4"
             url = f"{base_url}/{year}/{month:02d}/{filename}"
             file_path = os.path.join(self.output_dir, filename)
-
+    
             if os.path.exists(file_path):
                 print(f" File already exists: {filename}")
                 continue
-
+    
+            print(f" Downloading {filename} ...")
             try:
-                with requests.Session() as session:
-                    session.trust_env = True
-                    r = session.get(url, stream=True, timeout=60)
-                    r.raise_for_status()
-
-                    total_size = int(r.headers.get("content-length", 0))
-                    with open(file_path, "wb") as f:
-                        for chunk in r.iter_content(chunk_size=8192):
-                            if chunk:
-                                f.write(chunk)
-            except Exception as e:
+                if use_curl:
+                    # Use explicit --netrc-file to work with either _netrc or .netrc
+                    cmd = [
+                        "curl",
+                        "-L",
+                        "--netrc-file",r"C:\Users\y46144ma\login_netrc",
+                        "--retry", "3",
+                        "--retry-delay", "2",
+                        "-c", cookies_path,
+                        "-b", cookies_path,
+                        url,
+                        "-o", file_path,
+                    ]
+                else:
+                    cmd = [
+                        "wget",
+                        "--load-cookies", cookies_path,
+                        "--save-cookies", cookies_path,
+                        "--keep-session-cookies",
+                        "--tries", "3",
+                        "--waitretry", "2",
+                        url,
+                        "-O", file_path,
+                    ]
+    
+                subprocess.run(cmd, check=True)
+            except subprocess.CalledProcessError as e:
                 print(f" Download failed for {filename}: {e}")
 
     def convert_to_csv(self):

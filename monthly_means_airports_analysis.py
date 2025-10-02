@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Monthly Means & Anomaly Analysis for Major Middle East Airports (Simple)
@@ -28,8 +26,8 @@ START_YEAR = 2020
 END_YEAR   = 2023
 
 # Output directories
-OUTPUT_DATA_DIR = r"C:\data\merra2_me"     # where NetCDF/CSVs will be cached
-OUTPUT_FIG_DIR  = r"C:\plots\merra2_me"    # where PNGs/CSVs will be saved
+OUTPUT_DATA_DIR = r"D:\MODIS Data"     # where NetCDF/CSVs will be cached
+OUTPUT_FIG_DIR  = r"C:\Users\y46144ma\Documents\GitHub\Dusty\Dust Plots"   # where PNGs/CSVs will be saved
 
 # Airports to track (ICAO: (lat, lon))
 AIRPORTS = {
@@ -44,7 +42,7 @@ AIRPORTS = {
 BBOX_PAD_DEG = 1.0
 
 # Save an additional summary CSV?
-SUMMARY_CSV = r"C:\plots\merra2_me\airport_monthly_summary.csv"  # set to None to skip
+SUMMARY_CSV = r"C:\Users\y46144ma\Documents\GitHub\Dusty\Dust Plots" # set to None to skip
 # =============================================================
 
 import os
@@ -56,7 +54,7 @@ from tqdm import tqdm
 
 # --- Import your downloader/converter class ---
 try:
-    from MERRA2AODProcessor import MERRA2AODProcessor
+    from Dust_Storm_Modules import MERRA2AODProcessor
 except Exception:
     try:
         from Dust_Storm_Modules import MERRA2AODProcessor
