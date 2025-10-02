@@ -1,11 +1,11 @@
 {
-    "project_name": "AOD_DUSMASS_TEST_2022",
+    "project_name": "Hard Limit DUSMASS",
     "region_bounds": [16.0, 28.0, 34.0, 56.0],
     "start_date": "2022-01-01",
     "end_date": "2022-12-31",
-    "modis_output_dir": "C:\\Users\\aqeel\\The University of Manchester\\UOM-RG-FSE-DUST - Aqeel_Shared_Files\\ENPROT_PowerBI\\Dusty\\MODIS Data",
-	"AOD_output_dir":  "D:\\EnPROT\\AOD_Data",
-    "flexpart_output_dir": "C:\\Users\\aqeel\\OneDrive - The University of Manchester\\Documents\\GitHub\\DustFlight\\Backend Test Code\\Dusty\\FLEXPart Data",
-    "plot_output_path": "C:\\Users\\aqeel\\OneDrive - The University of Manchester\\Documents\\GitHub\\DustFlight\\Backend Test Code\\Dusty\\Dust Plots\\dust_days_plot.png",
-    "csv_output_path": "C:\\Users\\aqeel\\The University of Manchester\\UOM-RG-FSE-DUST - Aqeel_Shared_Files\\ENPROT_PowerBI\\Dusty\\Dust csv\\"
+    "modis_output_dir": "C:\\Users\\y46144ma\\The University of Manchester\\UOM-RG-FSE-DUST - Aqeel_Shared_Files\\ENPROT_PowerBI\\Dusty\\MODIS Data",
+	"AOD_output_dir":  "C:\\Users\\y46144ma\\The University of Manchester\\UOM-RG-FSE-DUST - Aqeel_Shared_Files\\ENPROT_PowerBI\\Dusty\\MODIS Data",
+    "flexpart_output_dir": "C:\\Users\\y46144ma\\The University of Manchester\\UOM-RG-FSE-DUST - Aqeel_Shared_Files\\ENPROT_PowerBI\\Dusty\\Dust csv\\",
+    "plot_output_path":"C:\\Users\\y46144ma\\The University of Manchester\\UOM-RG-FSE-DUST - Aqeel_Shared_Files\\ENPROT_PowerBI\\Dusty\\Dust csv",
+    "csv_output_path": "C:\\Users\\y46144ma\\The University of Manchester\\UOM-RG-FSE-DUST - Aqeel_Shared_Files\\ENPROT_PowerBI\\Dusty\\Dust csv"
 }

@@ -50,7 +50,7 @@ if __name__ == "__main__":
     AOD_Directory = config["AOD_output_dir"]
     csv_output_path = config["csv_output_path"]
     project_name = config["project_name"]
-    airport_csv_path = r"C:\Users\aqeel\The University of Manchester\UOM-RG-FSE-DUST - Aqeel_Shared_Files\ENPROT_PowerBI\Flight Data\Airports Database\airports.csv"
+    airport_csv_path = r"C:\Users\y46144ma\The University of Manchester\UOM-RG-FSE-DUST - Aqeel_Shared_Files\ENPROT_PowerBI\Flight Data\Airports Database\airports.csv"
     use_fusion = int(
         input("Would you like to use Fusion Storm Detector Module \n 1 or 0\n")
     )  # Add this to your JSON if needed
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     processor.download_files()
     processor.convert_to_csv()
     AOD = MERRA2AODANAProcessor(start_date, end_date, region_bounds, AOD_Directory)
-    AOD.run()
+    #AOD.run()
 
     analyzer = MonthlyDustAnalyzer(output_dir, project_name)
     analyzer.analyze(csv_output_path)
