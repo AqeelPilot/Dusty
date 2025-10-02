@@ -296,6 +296,7 @@ class MonthlyDustAnalyzer:
 
         # Apply 2× std threshold
         merged["threshold"] = merged["monthly_mean"] + 2 * merged["std_dev"]
+        merged["threshold"] = 500/1e9 #This is setting a hard limit make sure to change this 
         merged["above_monthly_avg"] = merged["dust_mass"] > merged["threshold"]
 
         # Save results
