@@ -16,8 +16,8 @@ START_YEAR = 2022
 END_YEAR   = 2022
 
 # Region bounds (lat_min, lat_max, lon_min, lon_max)
-LAT_MIN, LAT_MAX = 30.0, 75.0
-LON_MIN, LON_MAX = -15.0, 60.0   # negatives (W) are fine; your class converts to 0–360
+LAT_MIN, LAT_MAX = 16.0, 28.0
+LON_MIN, LON_MAX = 34.0, 56.0   # negatives (W) are fine; your class converts to 0–360
 
 # Output directory (NetCDFs + CSVs will live here)
 OUTPUT_DIR = r"C:\data\merra2"
