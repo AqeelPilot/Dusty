@@ -23,10 +23,10 @@ Edit the USER INPUTS below and run:
 
 # ================== USER INPUTS (EDIT THESE) ==================
 START_YEAR = 2020
-END_YEAR   = 2023
+END_YEAR   = 2024
 
 # Output directories
-OUTPUT_DATA_DIR = r"D:\MODIS Data"     # where NetCDF/CSVs will be cached
+OUTPUT_DATA_DIR = r"D:\MODIS_Data"     # where NetCDF/CSVs will be cached
 OUTPUT_FIG_DIR  = r"C:\Users\y46144ma\Documents\GitHub\Dusty\Dust Plots"   # where PNGs/CSVs will be saved
 
 # Airports to track (ICAO: (lat, lon))
@@ -42,7 +42,7 @@ AIRPORTS = {
 BBOX_PAD_DEG = 1.0
 
 # Save an additional summary CSV?
-SUMMARY_CSV = r"C:\Users\y46144ma\Documents\GitHub\Dusty\Dust Plots" # set to None to skip
+SUMMARY_CSV = r"C:\Users\y46144ma\Documents\GitHub\Dusty\Dust Plots\dust_summary.csv" # set to None to skip
 # =============================================================
 
 import os
